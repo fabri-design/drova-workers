@@ -1,0 +1,13 @@
+{
+  "name": "drova-workers",
+  "version": "1.0.0",
+  "description": "Equipo IA autónomo para Drova Agency - Worker Senior (mentor estratégico) + Worker Captación (prospección LinkedIn). Funciona 24/7.",
+  "main": "worker-senior-drova.js",
+  "scripts": {
+    "start": "node worker-senior-drova.js",
+    "captacion": "node worker-captacion-drova.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.0"
+  }
+}

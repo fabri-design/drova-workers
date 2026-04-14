@@ -1,0 +1,76 @@
+name: Drova Workers - Captación & Senior
+
+on:
+  schedule:
+    # Lunes a viernes: 9am, 12pm, 3pm, 6pm Barcelona (CET/CEST)
+    - cron: '0 8 * * 1-5'   # 9am CET
+    - cron: '0 11 * * 1-5'  # 12pm CET
+    - cron: '0 14 * * 1-5'  # 3pm CET
+    - cron: '0 17 * * 1-5'  # 6pm CET
+    
+    # Sábado: 9am, 12pm Barcelona (CET/CEST)
+    - cron: '0 8 * * 6'     # 9am CET sábado
+    - cron: '0 11 * * 6'    # 12pm CET sábado
+
+jobs:
+  captacion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm install @anthropic-ai/sdk
+      
+      - name: Run Captación Worker
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node worker-captacion-drova.js
+      
+      - name: Upload Captación Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: captacion-reports
+          path: captacion-reporte-*.json
+          retention-days: 30
+
+  senior:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm install @anthropic-ai/sdk
+      
+      - name: Run Senior Worker
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node worker-senior-drova.js
+      
+      - name: Upload Senior Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: senior-reports
+          path: senior-reporte-*.json
+          retention-days: 30
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [captacion, senior]
+    if: always()
+    steps:
+      - name: Notify Execution
+        run: |
+          echo "✅ Workers ejecutados: $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "📊 Reportes guardados en artifacts"
